@@ -9,10 +9,7 @@
 .cpu    cortex-m0plus
 .thumb
 .global main_asm
-.global input
-.global grabArray
 .align  4
-
  
 
 .equ    DFLT_STATE_STRT, 1            @ Specify the value to start flashing
