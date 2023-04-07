@@ -67,6 +67,7 @@ main_asm:
 alarm_init_return:
 
         b    gpio_interrupt_init                          @Initilise the GPIO Interrupt interrupt
+gpio_init_return:
 
 
 alarm_interrupt_init:
