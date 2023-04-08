@@ -36,8 +36,8 @@
 
 .equ    LED_VAL_ON,    1              @ Specify value that turns the LED "on"
 .equ    LED_VAL_OFF,   0              @ Specify value that turns the LED "off"
-.equ    GPIO_ISR_OFFSET, 0x74         @ GPIO is int #13 (vector table entry 29)
-.equ    ALRM_ISR_OFFSET, 0x40         @ ALARM0 is int #0 (vector table entry 16)
+.equ    interrupt_event_function_OFFSET, 0x74         @ GPIO is int #13 (vector table entry 29)
+.equ    interrupt_alarm_function_OFFSET, 0x40         @ ALARM0 is int #0 (vector table entry 16)
 
 main_asm:
 
@@ -129,16 +129,16 @@ updateAlarm:
 
 //
 
-// Sets up the alrm_isr in the RAM vector table and enables the correct interrupt
+// Sets up the interrupt_alarm_function in the RAM vector table and enables the correct interrupt
 
 //
 
 alarm_interrupt_init:
 
         ldr     r1, [r5]                                @ This loads the at address r2 (VTOR register) into r1
-        movs    r2, #ALRM_ISR_OFFSET                    @ This loads the at the memory address ALARM_ISR_OFFSET which is used to get the interrput for the alarm
+        movs    r2, #interrupt_alarm_function_OFFSET                    @ This loads the at the memory address ALARM_ISR_OFFSET which is used to get the interrput for the alarm
         add     r2, r1                                  @ This adds the two memory addresses together and stores the result in r2
-        ldr     r0, = alrm_isr                        @ This loads the address of the alarm_isr function
+        ldr     r0, = interrupt_alarm_function                        @ This loads the address of the alarm_isr function
         str     r0, [r2]                                @ Store the address of this function to the memory address stored in r2
         movs    r0, #1                                  @ Mov 1 into r0
         str     r0, [r6]                                @ Store the data in r0 at the address calculated in the above instruction
@@ -146,16 +146,16 @@ alarm_interrupt_init:
 
 //
 
-// Sets up the gpio_isr in the RAM vector table and enables the correct interrupt
+// Sets up the interrupt_event_function in the RAM vector table and enables the correct interrupt
 
 //
 
 gpio_interrupt_init:
 
     ldr     r1, [r5]                                @ This loads the at address r2 (VTOR register) into r1
-        movs    r2, #GPIO_ISR_OFFSET                    @ This loads the at the memory address ALARM_ISR_OFFSET which is used to get the interrput for the alarm
+        movs    r2, #interrupt_event_function_OFFSET                    @ This loads the at the memory address ALARM_ISR_OFFSET which is used to get the interrput for the alarm
         add     r2, r1                                  @ This adds the two memory addresses together and stores the result in r2
-        ldr     r0, =gpio_isr                  @ This loads the address of the alarm_isr function
+        ldr     r0, =interrupt_event_function                  @ This loads the address of the alarm_isr function
         str     r0, [r2]                                @ Store the address of this function to the memory address stored in r2
         ldr     r0, =0x2000                             @ Load 0x2000 into r0
         ldr     r5, =TIMER_BASE                         @ Load the base address for the RP2040 timer component
@@ -205,25 +205,28 @@ gpio_interrupt_init:
 
 .thumb_func
 
-alrm_isr:
+interrupt_alarm_function:
 
     /// Testing         //movs    r0, error_message
     /// Testing         ldr     r0, =alarm_message
     /// Testing         bl      printf
 
-    b   main_loop                      
-
- 
+                            
+    ldr     r2, =TIMER_BASE
+    ldr     r1, =TIMER_INTR_OFFSET
+    add     r2, r1
+    movs    r0, #1                                  
+    str     r0, [r2]
+    push    {lr}
+    bl      alarm_finished
+    pop     {pc}     
 
 .thumb_func
-
-gpio_isr:
+interrupt_event_function:
 
     /// Testing         //movs    r0, error_message
     /// Testing         ldr     r0, =event_message
-    /// Testing         bl      printf
-
-    b   main_loop
+    /// Testing         bl      printf                   
 
 
 .align 4
