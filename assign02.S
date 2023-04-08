@@ -3,41 +3,46 @@
 #include "hardware/regs/timer.h"
 #include "hardware/regs/m0plus.h"
 
+
+
 .syntax unified
 .cpu    cortex-m0plus
 .thumb
 .global main_asm
+.global input
+.global grabArray
 .align  4
+
+ 
 
 .equ    DFLT_STATE_STRT, 1            @ Specify the value to start flashing
 .equ    DFLT_STATE_STOP, 0            @ Specify the value to stop flashing
-.equ    DFLT_ALARM_TIME, 1000000      @ Specify the default alarm timeout
+.equ    DFLT_ALARM_TIME, 3000000      @ Specify the default alarm timeout
+.equ    SLEEP_TIME, 100               @ Specify the amount of ms that we want to sleep for in the main_loop
 
-.equ    GPIO_BTN_DN_MSK, 0x00040000   @ Bit-18 for falling-edge event on GP20
-.equ    GPIO_BTN_EN_MSK, 0x00400000   @ Bit-22 for falling-edge event on GP21
-.equ    GPIO_BTN_UP_MSK, 0x04000000   @ Bit-26 for falling-edge event on GP22
+ 
 
-.equ    GPIO_BTN_DN,  20              @ Specify pin for the "down" button
+.equ    GPIO21_EDGE_LOW, 0x00400000   @ Bit-22 for falling-edge event on GP21
+.equ    GPIO21_EDGE_HIGH, 0x00800000   @ Bit-23 for rising-edge event on GP21
+.equ    DASH_TIME, 250000
+.equ    SPACE, 1000000
+
+
+
 .equ    GPIO_BTN_EN,  21              @ Specify pin for the "enter" button
-.equ    GPIO_BTN_UP,  22              @ Specify pin for the "up" button
-.equ    GPIO_LED_PIN, 25              @ Specify pin for the built-in LED
 .equ    GPIO_DIR_IN,   0              @ Specify input direction for a GPIO pin
 .equ    GPIO_DIR_OUT,  1              @ Specify output direction for a GPIO pin
+.equ    GPIO_LED_PIN, 25              @ Specify pin for the built-in LED
 
 .equ    LED_VAL_ON,    1              @ Specify value that turns the LED "on"
 .equ    LED_VAL_OFF,   0              @ Specify value that turns the LED "off"
-.equ    BUT_VAL_ON,    0
-.equ    BUT_VAL_OFF,   1
-
 .equ    GPIO_ISR_OFFSET, 0x74         @ GPIO is int #13 (vector table entry 29)
 .equ    ALRM_ISR_OFFSET, 0x40         @ ALARM0 is int #0 (vector table entry 16)
 
-.equ    SLEEP_TIME, 500
-.equ    FLASHING_STATE, 0x002FFFC0
-
-@ Entry point to the ASM portion of the program
 main_asm:
-                movs    r0, #GPIO_LED_PIN                       @ Load the LED pin into r0 to use as first parameter
+
+    push  {lr}
+    movs    r0, #GPIO_LED_PIN                       @ Load the LED pin into r0 to use as first parameter
         bl      asm_gpio_init                           @ Call asm_gpio_init to initialise this pin
         movs    r0, #GPIO_LED_PIN                       @ Load the LED pin into r0 to use as first parameter
         movs    r1, #GPIO_DIR_OUT                       @ Load the output value into r1 to use as second parameter
@@ -62,13 +67,71 @@ main_asm:
         add     r7, r7, r2                              @ Combine the two addresses together and save in r7 for future use
         ldr     r2, =TIMER_BASE                         @ Load the base for all the timer pins
    
-        b       alarm_interrupt_init
+    b       alarm_interrupt_init
 
 alarm_init_return:
 
-        b    gpio_interrupt_init                          @Initilise the GPIO Interrupt interrupt
+    b    gpio_interrupt_init                          @Initilise the GPIO Interrupt interrupt
 gpio_init_return:
+    ldr     r1, = TIMER_BASE
+    ldr     r2, = TIMER_INTE_OFFSET  @ Enable the alarm by writing 1 to the register 
+    adds    r2, r1
+    movs    r1, #0
+    str     r1, [r2]
+    ldr     r4, =0                                      @Break main_loop flag
+    pop   {pc}
 
+input:
+
+    push {lr}                      
+    ldr r4, =0    
+
+
+main_loop:
+                      
+    wfi                       // Wait here until any interrupt fires
+    cmp r4, #0
+    bne return_to_c
+
+    b     main_loop                // Always branch back to main_loop
+
+return_to_c:
+
+    pop {pc}
+
+ 
+
+updateAlarm:
+    /// Testing         ldr     r0, =error_message
+    /// Testing         bl      printf
+    /// Testing         b       main_main_loop
+
+ 
+
+    ldr     r2, =TIMER_BASE                            @Get the current timer count from (TIMER_BASE + TIMER_TIMELR_OFFSET) register
+    ldr     r1, =TIMER_TIMELR_OFFSET
+    add     r2, r1
+    ldr     r1, [r2]                                    @
+    ldr     r0, =DFLT_ALARM_TIME
+    add     r1, r0                                      @ Add the time delay you want to wait for to the current timer count
+    ldr     r2, = TIMER_BASE                             @ Push the updated value to (TIMER_BASE + TIMER_ALARM0_OFFSET)
+    ldr     r3, = TIMER_ALARM0_OFFSET
+    add     r2, r2, r3
+    str     r1, [r2]                                    @
+    ldr     r2, =TIMER_BASE                             @ Enable the alarm by writing 1 to the register
+    ldr     r1, =TIMER_INTE_OFFSET
+    add     r2, r2, r1
+    movs    r1, #1
+    str     r1, [r2]
+    bx      lr                                          @Exit subroutine
+
+ 
+
+//
+
+// Sets up the alrm_isr in the RAM vector table and enables the correct interrupt
+
+//
 
 alarm_interrupt_init:
 
@@ -81,10 +144,15 @@ alarm_interrupt_init:
         str     r0, [r6]                                @ Store the data in r0 at the address calculated in the above instruction
         b       alarm_init_return                       @ Return back to where the function was called from
 
+//
+
+// Sets up the gpio_isr in the RAM vector table and enables the correct interrupt
+
+//
 
 gpio_interrupt_init:
 
-        ldr     r1, [r5]                                @ This loads the at address r2 (VTOR register) into r1
+    ldr     r1, [r5]                                @ This loads the at address r2 (VTOR register) into r1
         movs    r2, #GPIO_ISR_OFFSET                    @ This loads the at the memory address ALARM_ISR_OFFSET which is used to get the interrput for the alarm
         add     r2, r1                                  @ This adds the two memory addresses together and stores the result in r2
         ldr     r0, =gpio_isr                  @ This loads the address of the alarm_isr function
@@ -94,4 +162,73 @@ gpio_interrupt_init:
         ldr     r2, =TIMER_INTE_OFFSET                  @ Load the offset address for the timer interrupt enable register
         add     r5, r5, r2                              @ Combine the two addresses together
         str     r0, [r6]                                @ Store the data in r0 at the address calculated in the above instruction
-        b       gpio_init_return                        @ Return back to where the function was called from              
+        b       gpio_init_return                        @ Return back to where the function was called from                   
+
+//
+
+// Service the pending interrupt from the GPIO
+
+
+/// Testing 
+/// Testing
+/// Testing check_up:
+/// Testing         push    {lr}
+/// Testing         movs    r0, #GPIO_BTN_UP
+/// Testing         bl      asm_gpio_get
+/// Testing         pop     {pc}
+/// Testing 
+/// Testing         @cmp     r0, #BUT_VAL_ON
+/// Testing         @beq     turnOn
+/// Testing         @b       turnOff
+/// Testing 
+/// Testing //Functions for testing
+/// Testing turnOn:
+/// Testing         movs    r0, #GPIO_LED_PIN
+/// Testing         movs    r1, #LED_VAL_ON
+/// Testing         bl      asm_gpio_put
+/// Testing         //movs    r0, error_message
+/// Testing         ldr     r0, =error_message
+/// Testing         bl      printf
+/// Testing         b       check_up
+/// Testing 
+/// Testing turnOff:
+/// Testing         movs    r0, #GPIO_LED_PIN
+/// Testing         movs    r1, #LED_VAL_OFF
+/// Testing         bl      asm_gpio_put
+/// Testing         //movs    r0, error_message
+/// Testing         ldr     r0, =error_message
+/// Testing         bl      printf
+/// Testing         b       check_up
+//
+
+ 
+
+.thumb_func
+
+alrm_isr:
+
+    /// Testing         //movs    r0, error_message
+    /// Testing         ldr     r0, =alarm_message
+    /// Testing         bl      printf
+
+    b   main_loop                      
+
+ 
+
+.thumb_func
+
+gpio_isr:
+
+    /// Testing         //movs    r0, error_message
+    /// Testing         ldr     r0, =event_message
+    /// Testing         bl      printf
+
+    b   main_loop
+
+
+.align 4
+dot_message: .asciz ".\n"
+dash_message: .asciz "-\n"
+error_message: .asciz "Error occured, should not be here\n"
+alarm_message: .asciz "Alarm entered\n"
+event_message: .asciz "Event has caused interrupt\n"
