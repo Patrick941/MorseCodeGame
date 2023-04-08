@@ -92,6 +92,29 @@ void playGame(){
 	printf("||             Enter '...--' for level 3             ||\n");
 	printf("||             Enter '....-' for level 4             ||\n");
 	printf("||===================================================||\n");
+
+    input();
+
+    // Obtain array from interrupts and compare with morse array
+    char *interruptArray = grabArray();
+
+    // Determine level based on input string
+    for (int levelIndex = 1; levelIndex <= 4; levelIndex++) {
+        char tempArray[6];
+
+        // Assign values from input to the temporary array
+        for (int i = 0; i < 6; i++) {
+            tempArray[i] = *(interruptArray + (i * sizeof(int)));
+        }
+
+        tempArray[5] = '\0'; // Ensure the temporary array is null-terminated
+
+        // Compare the temporary array with the morse strings
+        if (strcmp(tempArray, morseStruct[levelIndex].morseCode) == 0) {
+            level = levelIndex;
+            break;
+        }
+    }
 }
 
 
