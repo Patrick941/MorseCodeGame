@@ -402,7 +402,7 @@ void playGame() {
                             printf("    Current Letter:< %c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
                             printf("||---------------------------------------------------||\n");
 
-                            printf("%i is the value of size\n", size);
+                            // printf("%i is the value of size\n", size);
                             // Get Input
 
                             branch_to_asm();
