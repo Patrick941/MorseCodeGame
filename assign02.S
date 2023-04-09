@@ -372,8 +372,8 @@ return:
 
 .section .rodata
 .align 4
-write_a_dot_string: .string ".\n"
-write_a_dash_string: .string "-\n"
+write_a_dot_string: .string "||                         .                         ||\n"
+write_a_dash_string: .string "||                         -                         ||\n"
 error_string: .string "Error occured, should not be here\n"
 alarm_string: .string "Alarm entered\n"
 event_string: .string "Event has caused interrupt\n"
