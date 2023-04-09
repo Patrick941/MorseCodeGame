@@ -201,9 +201,6 @@ void playGame() {
                         if (guess_Correct == 5) {
                             level++;
                             completed_Levels++;
-                            Game_Win_Screen();
-                            Game_STATS();
-                            return;
                             break;
                         }
                     } else {
@@ -264,9 +261,6 @@ void playGame() {
                         if (guess_Correct == 5) {
                             level++;
                             completed_Levels++;
-                            Game_Win_Screen();
-                            Game_STATS();
-                            return;
                             break;
                         }
                     } else {
@@ -361,9 +355,6 @@ void playGame() {
                                     printf("||---------------------------------------------------||\n");
                                     level++;
                                     completed_Levels++;
-                                    Game_Win_Screen();
-                                    Game_STATS();
-                                    return;
                                     break;
                                 }
                             } else {
@@ -442,9 +433,6 @@ void playGame() {
                                     printf("||---------------------------------------------------||\n");
                                     level++;
                                     completed_Levels++;
-                                    Game_Win_Screen();
-                                    Game_STATS();
-                                    return;
                                     break;
                                 }
                             } else {
