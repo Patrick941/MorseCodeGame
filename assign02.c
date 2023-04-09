@@ -18,8 +18,12 @@ void main_asm();
 // Main entry point of the application
 int main() {
     setUpArrays();
-    stdio_init_all();              // Initialise all basic IO
-    main_asm();                    // Jump into the ASM code
+    stdio_init_all();              
+    PIO pio = pio0;
+    uint offset = pio_add_program(pio, & ws2812_program);
+    ws2812_program_init(pio, 0, offset, WS2812_PIN, 800000, IS_RGBW);
+
+    main_asm();                    
     playGame();
     return 0;                      // Application return code
 }
@@ -48,6 +52,41 @@ void asm_gpio_put(uint pin, bool value) {
 void asm_gpio_set_irq(uint pin) {
     gpio_set_irq_enabled(pin, GPIO_IRQ_EDGE_FALL, true);
 }
+
+// FROM Example
+static inline void put_pixel(uint32_t pixel_grb) {
+    pio_sm_put_blocking(pio0, 0, pixel_grb << 8u);
+}
+
+// FROM Example
+static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) {
+    return ((uint32_t)(r) << 8) |
+        ((uint32_t)(g) << 16) |
+        (uint32_t)(b);
+}
+
+// Function to change LED based on current lives
+void RGB_Change() {
+    // From example
+    if (lives == 0) {
+        // Red when no lives
+        printf("\033[1;31m");
+        put_pixel(urgb_u32(0x7F, 0x00, 0x00));
+    } else if (lives == 1) {
+        // Orange for 1 life
+        printf("\033[0;33m");
+        put_pixel(urgb_u32(0x2F, 0xC, 0x00));
+    } else if (lives == 2) {
+        // Blue for 2 lives
+        printf("\033[0;34m");
+        put_pixel(urgb_u32(0x00, 0x00, 0x7F));
+    } else if (lives == 3) {
+        // Green for 3 lives
+        printf("\033[1;32m");
+        put_pixel(urgb_u32(0x00, 0x7F, 0x00));
+    }
+}
+
 
 void playGame() {
     printf("\033[1;34m");
