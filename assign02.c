@@ -370,6 +370,9 @@ void playGame() {
                                 // If Lost Last Life, Game Over
                                 if (lives == 0) {
                                     Game_Over = '1';
+                                    Game_Over_Screen();
+                                    Game_STATS();
+                                    return;
                                     break;
                                 }
                             }
@@ -448,6 +451,9 @@ void playGame() {
                                 // If Lost Last Life, Game Over
                                 if (lives == 0) {
                                     Game_Over = '1';
+                                    Game_Over_Screen();
+                                    Game_STATS();
+                                    return;
                                     break;
                                 }
                             }
