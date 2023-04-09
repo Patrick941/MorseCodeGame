@@ -174,7 +174,7 @@ void playGame() {
 
                     // Print Level 1
                     printf("||---------------------------------------------------||\n");
-                    printf("    Your Character is<%c >    Morse: (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
+                    printf("    Your Character Is < %c >    Morse: (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
                     printf("||---------------------------------------------------||\n");
 
                     // Get input
@@ -234,7 +234,7 @@ void playGame() {
                     challenge_Index = rand() % 36;
 
                     printf("||---------------------------------------------------||\n");
-                    printf("    Your Character is<%c >\n", morseStruct[challenge_Index].letter);
+                    printf("    Your Character is < %c >\n", morseStruct[challenge_Index].letter);
                     printf("||---------------------------------------------------||\n");
 
                     // Get input
@@ -311,14 +311,14 @@ void playGame() {
                         }
 
                         printf("||---------------------------------------------------||\n");
-                        printf("    Your Word Is<%s > and it is of size %i \n", buff, size);
+                        printf("    Your Word Is < %s > and it is of size %i \n", buff, size);
                         printf("||---------------------------------------------------||\n");
 
                         while (guess_Current < 5) {
                             challenge_Index = wordLetterIndexes[guess_Current];
 
                             printf("||---------------------------------------------------||\n");
-                            printf("    Current Letter:<%c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
+                            printf("    Current Letter: < %c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
                             printf("||---------------------------------------------------||\n");
 
                             //printf("%i is the value of size\n", size);
@@ -351,7 +351,7 @@ void playGame() {
                                 if (guess_Correct == 5) {
 
                                     printf("||---------------------------------------------------||\n");
-                                    printf("||              [ + WORD COMPLETED +]               ||\n");
+                                    printf("||              [ + WORD COMPLETED + ]               ||\n");
                                     printf("||---------------------------------------------------||\n");
                                     level++;
                                     completed_Levels++;
@@ -392,14 +392,14 @@ void playGame() {
                         }
 
                         printf("||---------------------------------------------------||\n");
-                        printf("    Your Word Is<%s > and it is of size %i \n", buff, size);
+                        printf("    Your Word Is < %s > and it is of size %i \n", buff, size);
                         printf("||---------------------------------------------------||\n");
 
                         while (guess_Current < 4) {
                             challenge_Index = wordLetterIndexes[guess_Current];
 
                             printf("||---------------------------------------------------||\n");
-                            printf("    Current Letter:<%c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
+                            printf("    Current Letter:< %c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
                             printf("||---------------------------------------------------||\n");
 
                             printf("%i is the value of size\n", size);
@@ -432,7 +432,7 @@ void playGame() {
                                 if (guess_Correct == 4) {
 
                                     printf("||---------------------------------------------------||\n");
-                                    printf("||              [ + WORD COMPLETED +]               ||\n");
+                                    printf("||              [ + WORD COMPLETED + ]               ||\n");
                                     printf("||---------------------------------------------------||\n");
                                     level++;
                                     completed_Levels++;
@@ -532,7 +532,7 @@ void playGame() {
                                 if (guess_Correct == 5) {
 
                                     printf("||---------------------------------------------------||\n");
-                                    printf("||              [ + WORD COMPLETED +]               ||\n");
+                                    printf("||              [ + WORD COMPLETED + ]               ||\n");
                                     printf("||---------------------------------------------------||\n");
                                     level++;
                                     completed_Levels++;
@@ -613,7 +613,7 @@ void playGame() {
                                 if (guess_Correct == 4) {
 
                                     printf("||---------------------------------------------------||\n");
-                                    printf("||              [ + WORD COMPLETED +]               ||\n");
+                                    printf("||              [ + WORD COMPLETED + ]               ||\n");
                                     printf("||---------------------------------------------------||\n");
                                     printf("\033[1;32m");
                                     completed_Levels++;
@@ -1059,6 +1059,6 @@ void Game_STATS() {
 
 void print_level_header(int level) {
     printf("||===================================================||\n");
-    printf("||                 [LEVEL: %i of 4]                  ||\n", level);
+    printf("||                  [LEVEL: %i of 4]                  ||\n", level);
     printf("||===================================================||\n");
 }
