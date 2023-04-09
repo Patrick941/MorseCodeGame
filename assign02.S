@@ -287,7 +287,7 @@ edgeLow:
     str     r2,[r0]                                     // Store r0 addres in r2
     bx      lr                                          // Branch back 
 
-// loading high edge//
+// loading High edge//
 
 edgeHigh:   
     ldr     r2,=GPIO21_EDGE_HIGH                        // Load (GPIO21_EDGE_HIGH) address into r2                  
@@ -339,7 +339,7 @@ write_a_dot:
     str     r1, [r0]                                    // Stores the addrss of the string r0 in r1
     bl      increment                                   // Branch to increment function
 
-//Function used to write the dot in the terminal//
+//Function used to write the dash in the terminal//
 
 write_a_dash: 
     ldr     r0,=write_a_dash_string                     // Loads the string  "-" into r0
