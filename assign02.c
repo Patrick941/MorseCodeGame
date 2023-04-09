@@ -497,14 +497,14 @@ void playGame() {
                         }
 
                         printf("||---------------------------------------------------||\n");
-                        printf("    Your Word Is<%s > and it is of size %i \n", buff, size);
+                        printf("    Your Word Is< %s > and it is of size %i \n", buff, size);
                         printf("||---------------------------------------------------||\n");
 
                         while (guess_Current < 5) {
                             challenge_Index = wordLetterIndex[guess_Current];
 
                             printf("||---------------------------------------------------||\n");
-                            printf("    Current Letter:<%c >\n", morseStruct[challenge_Index].letter);
+                            printf("    Current Letter:< %c >\n", morseStruct[challenge_Index].letter);
                             printf("||---------------------------------------------------||\n");
 
                             //printf("%i is the value of size\n", size);
@@ -578,14 +578,14 @@ void playGame() {
                         }
 
                         printf("||---------------------------------------------------||\n");
-                        printf("    Your Word Is<%s > and it is of size %i \n", buff, size);
+                        printf("    Your Word Is< %s > and it is of size %i \n", buff, size);
                         printf("||---------------------------------------------------||\n");
 
                         while (guess_Current < 4) {
                             challenge_Index = wordLetterIndex[guess_Current];
 
                             printf("||---------------------------------------------------||\n");
-                            printf("    Current Letter:<%c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
+                            printf("    Current Letter:< %c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
                             printf("||---------------------------------------------------||\n");
 
                             //printf("%i is the value of size\n", size);
