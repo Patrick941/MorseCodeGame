@@ -49,54 +49,55 @@ void asm_gpio_set_irq(uint pin) {
     gpio_set_irq_enabled(pin, GPIO_IRQ_EDGE_FALL, true);
 }
 
-void playGame(){
+void playGame() {
     printf("\033[1;34m");
-	put_pixel(urgb_u32(0x00, 0x00, 0x00));
-	printf("||===================================================||\n");
-	printf("||  _       _   _______   _______   _______   _____  ||\n");
-	printf("|| |:|     |:| |:::::::| |:::::::| |:::::::| |:::::| ||\n");
-	printf("|| |::|   |::| |:|   |:| |:|   |:| |:|       |:|     ||\n");
-	printf("|| |:|:| |:|:| |:|   |:| |:|__|:| |:|____  |:|___  ||\n");
-	printf("|| |:||:|:||:| |:|   |:| |::::::|  |:::::::| |:::::| ||\n");
-	printf("|| |:| |:| |:| |:|   |:| |:||:|          |:| |:|     ||\n");
-	printf("|| |:|     |:| |:|__|:| |:| |:|    _____|:| |:|__  ||\n");
-	printf("|| |:|     |:| |:::::::| |:|  |:|  |:::::::| |:::::| ||\n");
-	printf("||      _________     ___     _       _   _____      ||\n");
-	printf("||     |:::::::::|   |:::|   |:|     |:| |:::::|     ||\n");
-	printf("||     |:|     |:|  |:| |:|  |::|   |::| |:|         ||\n");
-	printf("||     |:|         |:|   |:| |:|:| |:|:| |:|___      ||\n");
-	printf("||     |:|    ___  |:|___|:| |:||:|:||:| |:::::|     ||\n");
-	printf("||     |:|   |:::| |:::::::| |:| |:| |:| |:|         ||\n");
-	printf("||     |:|____|:| |:|   |:| |:|     |:| |:|__      ||\n");
-	printf("||     |:::::::::| |:|   |:| |:|     |:| |:::::|     ||\n");
-	printf("||===================================================||\n");
-	printf("||                  [HOW TO PLAY]                   ||\n");
-	printf("||===================================================||\n");
-	printf("||       Characters Will Appear On Your Screen       ||\n");
-	printf("||    You Must Enter The Corresponding Morse Code    ||\n");
-	printf("||      Press The GP21 Button Quickly For A Dot      ||\n");
-	printf("||      Press The GP21 Button Longer For A Dash      ||\n");
-	printf("||          If Correct You Will Gain A Life          ||\n");
-	printf("||               (Maximum Of 3 lives)                ||\n");
-	printf("||         If Incorrect You Will Lose A Life         ||\n");
-	printf("||      When You Lose All Lives, it's Game Over      ||\n");
-	printf("||    After 5 Correct Sequences You Win The Level    ||\n");
-	printf("||===================================================||\n");
-	printf("\033[0;39m");
+    put_pixel(urgb_u32(0x00, 0x00, 0x00));
+    printf("||===================================================||\n");
+    printf("||  _       _   ____3___   _______   _______   _____  ||\n");
+    printf("|| |:|     |:| |:::::::| |:::::::| |:::::::| |:::::| ||\n");
+    printf("|| |::|   |::| |:|   |:| |:|   |:| |:|       |:|     ||\n");
+    printf("|| |:|:| |:|:| |:|   |:| |:|_|:| |:|___  |:|___  ||\n");
+    printf("|| |:||:|:||:| |:|   |:| |::::::|  |:::::::| |:::::| ||\n");
+    printf("|| |:| |:| |:| |:|   |:| |:||:|          |:| |:|     ||\n");
+    printf("|| |:|     |:| |:|_|:| |:| |:|    _____|:| |:|_  ||\n");
+    printf("|| |:|     |:| |:::::::| |:|  |:|  |:::::::| |:::::| ||\n");
+    printf("||      _________     ___     _       _   _____      ||\n");
+    printf("||     |:::::::::|   |:::|   |:|     |:| |:::::|     ||\n");
+    printf("||     |:|     |:|  |:| |:|  |::|   |::| |:|         ||\n");
+    printf("||     |:|         |:|   |:| |:|:| |:|:| |:|___      ||\n");
+    printf("||     |:|    ___  |:|___|:| |:||:|:||:| |:::::|     ||\n");
+    printf("||     |:|   |:::| |:::::::| |:| |:| |:| |:|         ||\n");
+    printf("||     |:|___|:|   |:|   |:| |:|     |:| |:| _       ||\n");
+    printf("||     |:::::::::| |:|   |:| |:|     |:| |:::::|     ||\n");
+    printf("||===================================================||\n");
+    printf("||                  [HOW TO PLAY]                   ||\n");
+    printf("||===================================================||\n");
+    printf("||       Characters Will Appear On Your Screen       ||\n");
+    printf("||    You Must Enter The Corresponding Morse Code    ||\n");
+    printf("||      Press The GP21 Button Quickly For A Dot      ||\n");
+    printf("||      Press The GP21 Button Longer For A Dash      ||\n");
+    printf("||          If Correct You Will Gain A Life          ||\n");
+    printf("||               (Maximum Of 3 lives)                ||\n");
+    printf("||         If Incorrect You Will Lose A Life         ||\n");
+    printf("||      When You Lose All Lives, it's Game Over      ||\n");
+    printf("||    After 5 Correct Sequences You Win The Level    ||\n");
+    printf("||===================================================||\n");
+    printf("\033[0;39m");
 
     printf("||===================================================||\n");
-	printf("||                   Select Level:                   ||\n");
-	printf("||===================================================||\n");
-	printf("||             Enter '.----' for level 1             ||\n");
-	printf("||             Enter '..---' for level 2             ||\n");
-	printf("||             Enter '...--' for level 3             ||\n");
-	printf("||             Enter '....-' for level 4             ||\n");
-	printf("||===================================================||\n");
+    printf("||                   Select Level:                   ||\n");
+    printf("||===================================================||\n");
+    printf("||             Enter '.----' for level 1             ||\n");
+    printf("||             Enter '..---' for level 2             ||\n");
+    printf("||             Enter '...--' for level 3             ||\n");
+    printf("||             Enter '....-' for level 4             ||\n");
+    printf("||===================================================||\n");
 
-    input();
+    // Receive input from arm interrupts
+    branch_to_asm();
 
     // Obtain array from interrupts and compare with morse array
-    char *interruptArray = grabArray();
+    char * interruptArray = getPointerToArray();
 
     // Determine level based on input string
     for (int levelIndex = 1; levelIndex <= 4; levelIndex++) {
@@ -104,7 +105,7 @@ void playGame(){
 
         // Assign values from input to the temporary array
         for (int i = 0; i < 6; i++) {
-            tempArray[i] = *(interruptArray + (i * sizeof(int)));
+            tempArray[i] = * (interruptArray + (i * sizeof(int)));
         }
 
         tempArray[5] = '\0'; // Ensure the temporary array is null-terminated
@@ -115,6 +116,492 @@ void playGame(){
             break;
         }
     }
+
+    while (Game_Over == '0') {
+        // To run levels based on cases
+        switch (level) {
+        case 1:
+            print_level_header(1);
+            lives = 3;
+            guess_Correct = 0;
+            RGB_Change(); // indicates the game has begun
+
+            for (;;) {
+                {
+                    challenge_Index = rand() % 36;
+
+                    // Print Level 1
+                    printf("||---------------------------------------------------||\n");
+                    printf("    Your Character is<%c >    Morse: (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
+                    printf("||---------------------------------------------------||\n");
+
+                    // Get input
+                    branch_to_asm();
+
+                    if (verify_Input() == 1) {
+                        // Increment Number of Correct Guesses
+                        guess_Correct++;
+
+                        // Increment Total Number of Correct Guesses
+                        total_Correct++;
+
+                        if (lives < 3) {
+                            // Increase Lives
+                            lives++;
+
+                            // Increase lives gained stat
+                            total_Lives_Gained++;
+
+                            // Change Colour of LED
+                            RGB_Change();
+                        }
+
+                        if (guess_Correct == 5) {
+                            level++;
+                            completed_Levels++;
+                            break;
+                        }
+                    } else {
+                        // Reduce Lives
+                        lives--;
+
+                        // Increment Amount of Lives Lost
+                        total_Lives_Lost++;
+
+                        // Change Colour of LED
+                        RGB_Change();
+
+                        // If Lost Last Life, Game Over
+                        if (lives == 0) {
+                            Game_Over = '1';
+                            break;
+                        }
+                    }
+                }
+            }
+
+            break;
+        case 2:
+            print_level_header(2);
+            lives = 3;
+            guess_Correct = 0;
+            RGB_Change(); // indicates the game has begun
+
+            for (;;) {
+                {
+                    challenge_Index = rand() % 36;
+
+                    printf("||---------------------------------------------------||\n");
+                    printf("    Your Character is<%c >\n", morseStruct[challenge_Index].letter);
+                    printf("||---------------------------------------------------||\n");
+
+                    // Get input
+                    branch_to_asm();
+
+                    if (verify_Input() == 1) {
+                        // Increment Number of Correct Guesses
+                        guess_Correct++;
+
+                        // Increment Total Number of Correct Guesses
+                        total_Correct++;
+
+                        if (lives < 3) {
+                            // Increase Lives
+                            lives++;
+
+                            // Increase lives gained stat
+                            total_Lives_Gained++;
+
+                            // Change Colour of LED
+                            RGB_Change();
+                        }
+
+                        if (guess_Correct == 5) {
+                            level++;
+                            completed_Levels++;
+                            break;
+                        }
+                    } else {
+                        // Reduce Lives
+                        lives--;
+
+                        // Increment Amount of Lives Lost
+                        total_Lives_Lost++;
+
+                        // Change Colour of LED
+                        RGB_Change();
+
+                        // If Lost Last Life, Game Over
+                        if (lives == 0) {
+                            Game_Over = '1';
+                            break;
+                        }
+                    }
+                }
+            }
+
+            break;
+        case 3:
+            lives = 3;
+            guess_Correct = 0;
+            print_level_header(3);
+            RGB_Change(); // indicates the game has begun
+            int wordLetterIndexes[5]; // Array of indexes
+
+            for (;;) {
+                {
+                    guess_Current = 0;
+                    challenge_Index = rand() % 20; // Get random word
+                    char * buff = morseStruct[challenge_Index].word; // Set buffer as that word
+                    int size = 0; // Set size of that word to 0
+
+                    if (challenge_Index < 15) {
+                        // While buffer is not end string
+                        while (strcmp( & buff[size], "\0")) {
+                            int i = 0;
+                            while (i != 36) {
+                                if (buff[size] == morseStruct[i].letter) {
+                                    wordLetterIndexes[size] = i;
+                                }
+                                i++;
+                            }
+                            size++;
+                        }
+
+                        printf("||---------------------------------------------------||\n");
+                        printf("    Your Word Is<%s > and it is of size %i \n", buff, size);
+                        printf("||---------------------------------------------------||\n");
+
+                        while (guess_Current < 5) {
+                            challenge_Index = wordLetterIndexes[guess_Current];
+
+                            printf("||---------------------------------------------------||\n");
+                            printf("    Current Letter:<%c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
+                            printf("||---------------------------------------------------||\n");
+
+                            //printf("%i is the value of size\n", size);
+                            // Get Input
+
+                            branch_to_asm();
+
+                            if (verify_Input() == 1) {
+                                guess_Current++;
+                                //printf("incremented guess_current. New value %i\n", guess_Current);
+                                //printf("%i is the value of size\n", 5);
+
+                                // Increment Number of Correct Guesses
+                                guess_Correct++;
+
+                                // Increment Total Number of Correct Guesses
+                                total_Correct++;
+
+                                if (lives < 3) {
+                                    // Increase Lives
+                                    lives++;
+
+                                    // Increase lives gained stat
+                                    total_Lives_Gained++;
+
+                                    // Change Colour of LED
+                                    RGB_Change();
+                                }
+
+                                if (guess_Correct == 5) {
+
+                                    printf("||---------------------------------------------------||\n");
+                                    printf("||              [ + WORD COMPLETED +]               ||\n");
+                                    printf("||---------------------------------------------------||\n");
+                                    level++;
+                                    completed_Levels++;
+                                    break;
+                                }
+                            } else {
+                                // Reduce Lives
+                                lives--;
+
+                                // Increment Amount of Lives Lost
+                                total_Lives_Lost++;
+
+                                // Change Colour of LED
+                                RGB_Change();
+
+                                // If Lost Last Life, Game Over
+                                if (lives == 0) {
+                                    Game_Over = '1';
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        // While buffer is not end string
+                        while (strcmp( & buff[size], "\0")) {
+                            int i = 0;
+                            while (i != 36) {
+                                if (buff[size] == morseStruct[i].letter) {
+                                    wordLetterIndexes[size] = i;
+                                }
+                                i++;
+                            }
+                            size++;
+                            size++;
+                        }
+
+                        printf("||---------------------------------------------------||\n");
+                        printf("    Your Word Is<%s > and it is of size %i \n", buff, size);
+                        printf("||---------------------------------------------------||\n");
+
+                        while (guess_Current < 4) {
+                            challenge_Index = wordLetterIndexes[guess_Current];
+
+                            printf("||---------------------------------------------------||\n");
+                            printf("    Current Letter:<%c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
+                            printf("||---------------------------------------------------||\n");
+
+                            printf("%i is the value of size\n", size);
+                            // Get Input
+
+                            branch_to_asm();
+
+                            if (verify_Input() == 1) {
+                                guess_Current++;
+                                //printf("incremented guess_current. New value %i\n", guess_Current);
+                                //printf("%i is the value of size\n", 5);
+
+                                // Increment Number of Correct Guesses
+                                guess_Correct++;
+
+                                // Increment Total Number of Correct Guesses
+                                total_Correct++;
+
+                                if (lives < 3) {
+                                    // Increase Lives
+                                    lives++;
+
+                                    // Increase lives gained stat
+                                    total_Lives_Gained++;
+
+                                    // Change Colour of LED
+                                    RGB_Change();
+                                }
+
+                                if (guess_Correct == 4) {
+
+                                    printf("||---------------------------------------------------||\n");
+                                    printf("||              [ + WORD COMPLETED +]               ||\n");
+                                    printf("||---------------------------------------------------||\n");
+                                    level++;
+                                    completed_Levels++;
+                                    break;
+                                }
+                            } else {
+                                // Reduce Lives
+                                lives--;
+
+                                // Increment Amount of Lives Lost
+                                total_Lives_Lost++;
+
+                                // Change Colour of LED
+                                RGB_Change();
+
+                                // If Lost Last Life, Game Over
+                                if (lives == 0) {
+                                    Game_Over = '1';
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            break;
+        case 4:
+            lives = 3;
+            guess_Correct = 0;
+            print_level_header(4);
+            RGB_Change(); // indicates the game has begun
+            int wordLetterIndex[5]; // Array of indexes
+
+            for (;;) {
+                {
+                    guess_Current = 0;
+                    challenge_Index = rand() % 20; // Get random word
+                    char * buff = morseStruct[challenge_Index].word; // Set buffer as that word
+                    int size = 0; // Set size of that word to 0
+
+                    if (challenge_Index < 15) {
+                        // While buffer is not end string
+                        while (strcmp( & buff[size], "\0")) {
+                            int i = 0;
+                            while (i != 36) {
+                                if (buff[size] == morseStruct[i].letter) {
+                                    wordLetterIndexes[size] = i;
+                                }
+                                i++;
+                            }
+                            size++;
+                            size++;
+                        }
+
+                        printf("||---------------------------------------------------||\n");
+                        printf("    Your Word Is<%s > and it is of size %i \n", buff, size);
+                        printf("||---------------------------------------------------||\n");
+
+                        while (guess_Current < 5) {
+                            challenge_Index = wordLetterIndex[guess_Current];
+
+                            printf("||---------------------------------------------------||\n");
+                            printf("    Current Letter:<%c >\n", morseStruct[challenge_Index].letter);
+                            printf("||---------------------------------------------------||\n");
+
+                            //printf("%i is the value of size\n", size);
+                            // Get Input
+
+                            branch_to_asm();
+
+                            if (verify_Input() == 1) {
+                                guess_Current++;
+                                //printf("incremented guess_current. New value %i\n", guess_Current);
+                                //printf("%i is the value of size\n", 5);
+
+                                // Increment Number of Correct Guesses
+                                guess_Correct++;
+
+                                // Increment Total Number of Correct Guesses
+                                total_Correct++;
+
+                                if (lives < 3) {
+                                    // Increase Lives
+                                    lives++;
+
+                                    // Increase lives gained stat
+                                    total_Lives_Gained++;
+
+                                    // Change Colour of LED
+                                    RGB_Change();
+                                }
+
+                                if (guess_Correct == 5) {
+
+                                    printf("||---------------------------------------------------||\n");
+                                    printf("||              [ + WORD COMPLETED +]               ||\n");
+                                    printf("||---------------------------------------------------||\n");
+                                    level++;
+                                    completed_Levels++;
+                                    break;
+                                }
+                            } else {
+                                // Reduce Lives
+                                lives--;
+
+                                // Increment Amount of Lives Lost
+                                total_Lives_Lost++;
+
+                                // Change Colour of LED
+                                RGB_Change();
+
+                                // If Lost Last Life, Game Over
+                                if (lives == 0) {
+                                    Game_Over = '1';
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        // While buffer is not end string
+                        while (strcmp( & buff[size], "\0")) {
+                            int i = 0;
+                            while (i != 36) {
+                                if (buff[size] == morseStruct[i].letter) {
+                                    wordLetterIndexes[size] = i;
+                                }
+                                i++;
+                            }
+                            size++;
+                            size++;
+                        }
+
+                        printf("||---------------------------------------------------||\n");
+                        printf("    Your Word Is<%s > and it is of size %i \n", buff, size);
+                        printf("||---------------------------------------------------||\n");
+
+                        while (guess_Current < 4) {
+                            challenge_Index = wordLetterIndex[guess_Current];
+
+                            printf("||---------------------------------------------------||\n");
+                            printf("    Current Letter:<%c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
+                            printf("||---------------------------------------------------||\n");
+
+                            //printf("%i is the value of size\n", size);
+                            // Get Input
+
+                            branch_to_asm();
+
+                            if (verify_Input() == 1) {
+                                guess_Current++;
+                                //printf("incremented guess_current. New value %i\n", guess_Current);
+                                //printf("%i is the value of size\n", 5);
+
+                                // Increment Number of Correct Guesses
+                                guess_Correct++;
+
+                                // Increment Total Number of Correct Guesses
+                                total_Correct++;
+
+                                if (lives < 3) {
+                                    // Increase Lives
+                                    lives++;
+
+                                    // Increase lives gained stat
+                                    total_Lives_Gained++;
+
+                                    // Change Colour of LED
+                                    RGB_Change();
+                                }
+
+                                if (guess_Correct == 4) {
+
+                                    printf("||---------------------------------------------------||\n");
+                                    printf("||              [ + WORD COMPLETED +]               ||\n");
+                                    printf("||---------------------------------------------------||\n");
+                                    printf("\033[1;32m");
+                                    completed_Levels++;
+                                    Game_Win_Screen();
+                                    Game_STATS();
+                                    break;
+                                }
+                            } else {
+                                // Reduce Lives
+                                lives--;
+
+                                // Increment Amount of Lives Lost
+                                total_Lives_Lost++;
+
+                                // Change Colour of LED
+                                RGB_Change();
+
+                                // If Lost Last Life, Game Over
+                                if (lives == 0) {
+                                    Game_Over = '1';
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            break;
+
+        default:
+            printf("Tip: try entering the level properly next time dumb dumb!");
+        }
+    }
+
+    Game_Over_Screen();
+    Game_STATS();
+    return;
+
 }
 
 // Compares morse input with morse array
