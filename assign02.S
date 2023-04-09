@@ -113,22 +113,22 @@ updateAlarm:
 
  
 
-    ldr     r2, =TIMER_BASE                            @Get the current timer count from (TIMER_BASE + TIMER_TIMELR_OFFSET) register
+    ldr     r2, =TIMER_BASE                            
     ldr     r1, =TIMER_TIMELR_OFFSET
     add     r2, r1
-    ldr     r1, [r2]                                    @
+    ldr     r1, [r2]                                    
     ldr     r0, =DFLT_ALARM_TIME
-    add     r1, r0                                      @ Add the time delay you want to wait for to the current timer count
-    ldr     r2, = TIMER_BASE                             @ Push the updated value to (TIMER_BASE + TIMER_ALARM0_OFFSET)
+    add     r1, r0                                      
+    ldr     r2, = TIMER_BASE                             
     ldr     r3, = TIMER_ALARM0_OFFSET
     add     r2, r2, r3
-    str     r1, [r2]                                    @
-    ldr     r2, =TIMER_BASE                             @ Enable the alarm by writing 1 to the register
+    str     r1, [r2]                                    
+    ldr     r2, =TIMER_BASE                             
     ldr     r1, =TIMER_INTE_OFFSET
     add     r2, r2, r1
     movs    r1, #1
     str     r1, [r2]
-    bx      lr                                          @Exit subroutine
+    bx      lr                                       
 
  
 
@@ -245,84 +245,102 @@ gpio_isr:
     ldr     r0, =GPIO21_EDGE_HIGH                                  
     cmp     r0, r1                                                  
     beq     falling_edge_interrupt
+write_a_dot:
+    ldr r0,=write_a_dot_string
+    bl printf
+    bl loader
+    ldr r0, =0x2E
+    str r0, [r1]
+    bl increment
+
+write_a_dash:
+    ldr r0,=write_a_dash_string
+    bl printf
+    bl loader
+    ldr r0, =0x2D
+    str r0, [r1]
+    bl increment
 
 load_interrupt_low:
-    ldr     r1,= IO_BANK0_BASE
-    ldr     r2, =IO_BANK0_INTR2_OFFSET         @ Load interrupt status from (IO_BANK0_BASE + IO_BANK0_PROC0_INTS2_OFFSET)
-    adds    r2,r1
-    ldr     r1,=GPIO21_EDGE_LOW                                    @ Load button mask
-    str     r1,[r2] 
-    bx      lr
+    /// Testing         //movs    r0, error_string
+    /// Testing         ldr     r0, =load_low_interrupt_string   @Should provide alternating pattern
+    /// Testing         bl      printf
+    ldr r1,= IO_BANK0_BASE
+    ldr r2, =IO_BANK0_INTR2_OFFSET
+    adds r2,r1
+    ldr r1,=GPIO21_EDGE_LOW
+    str r1,[r2]
+    bx lr
 
-load_interrupt_high:  
-    ldr     r1,= IO_BANK0_BASE
-    ldr     r2, =IO_BANK0_INTR2_OFFSET         @ Load interrupt status from (IO_BANK0_BASE + IO_BANK0_PROC0_INTS2_OFFSET)
-    adds    r2,r1
-    ldr     r1,=GPIO21_EDGE_HIGH                                   @ Load button mask
-    str     r1,[r2]                                                @ Reset button interrupt status
-    bx      lr
+load_interrupt_high:
+    /// Testing         //movs    r0, error_string
+    /// Testing         ldr     r0, =load_high_interrupt_string   @Should provide alternating pattern
+    /// Testing         bl      printf
+    ldr r1,= IO_BANK0_BASE
+    ldr r2, =IO_BANK0_INTR2_OFFSET
+    adds r2,r1
+    ldr r1,=GPIO21_EDGE_HIGH
+    str r1,[r2]
+    bx lr
 
 rising_edge_interrupt:
-    /// Testing         //movs    r0, falling_edge_interrupt_string
-    /// Testing         ldr     r0, =falling_edge_interrupt_string
-    /// Testing         bl      printf
-    bl      load_interrupt_low                      
-    ldr     r1,= TIMER_BASE               @Get the current timer count from (TIMER_BASE + TIMER_TIMELR_OFFSET) register
-    ldr     r3, =TIMER_TIMELR_OFFSET      @ Load interrupt status from (IO_BANK0_BASE + IO_BANK0_PROC0_INTS2_OFFSET)
-    adds    r3,r1                         @Get the current timer count from (TIMER_BASE + TIMER_TIMELR_OFFSET) register
-    ldr     r6, [r3]
+    bl load_interrupt_low
+    ldr r1,= TIMER_BASE
+    ldr r3, =TIMER_TIMELR_OFFSET
+    adds r3,r1
+    ldr r6, [r3]
     bl updateAlarm
-    pop {pc} 
+    pop {pc}
 
 falling_edge_interrupt:
-    /// Testing         //movs    r0, rising_edge_interrupt_string
-    /// Testing         ldr     r0, =rising_edge_interrupt_string
-    /// Testing         bl      printf
-    bl      load_interrupt_high        
-    ldr     r1,= TIMER_BASE               @Get the current timer count from (TIMER_BASE + TIMER_TIMELR_OFFSET) register
-    ldr     r3, =TIMER_TIMELR_OFFSET      @ Load interrupt status from (IO_BANK0_BASE + IO_BANK0_PROC0_INTS2_OFFSET)
-    adds    r3,r1
-    ldr     r7, [r3]
-    subs    r7, r6                                              @ Get time diff 
-    ldr     r1, =write_a_dash_TIME                                      @ Load write_a_dash time
-    cmp     r7, r1                                              @ 
-    bhs     write_a_dash 
-
-write_a_dot: 
-    ldr     r0,=write_a_dot_string
-    bl      printf
-    bl      loader
-    ldr     r1, =0x2E           @ Write write_a_dot '.' value  
-    str     r1, [r0]            @ Store write_a_dot value in current array index 
-    bl      increment
-
-write_a_dash: 
-    ldr     r0,=write_a_dash_string
-    bl      printf
-    bl      loader
-    ldr     r1, =0x2D           @ Write write_a_dash '-' to array 
-    str     r1, [r0]            @ Store
-    bl      increment                  @ Branch to increment 
+    bl load_interrupt_high
+    ldr r1,= TIMER_BASE
+    ldr r3, =TIMER_TIMELR_OFFSET
+    adds r3,r1
+    ldr r7, [r3]
+    subs r7, r6
+    ldr r1, =write_a_dash_TIME
+    cmp r7, r1
+    bhs write_a_dash
+    b write_a_dot
 
 loader:
-    ldr     r0, =reserved_array          @ Load address of array 
-    ldr     r1, =iter           @ Load address of iter 
-    ldr     r2 ,[r1]            @ Read value of iter 
-    adds    r0, r2              @ Go to current index of array
-    bx      lr
+    ldr r0, =reserved_array
+    ldr r1, =iter
+    ldr r2 ,[r1]
+    adds r0, r2
+    bx lr
 
 increment:
-    bl      loader
-    adds    r2, #4              @ Add 4 to iter for size of bytes 
-    str     r2, [r1]            @ Store value back to increment
-
+    bl loader
+    adds r2, #4
+    str r2, [r1]
     bl      updateAlarm
     pop     {pc} 
 
+check_buffer:
+    bl loader
+    ldr r1, =0x0
+    str r1, [r0]
+    ldr r0, =reserved_array
+    ldr r1, =iter
+    ldr r0, =0x0
+    str r0, [r1]
+    ldr r1,= TIMER_BASE
+    ldr r2, =TIMER_INTE_OFFSET
+    adds r2,r1
+    movs r1, #0
+    str r1, [r2]
+    ldr r4, =1
+    pop {pc}
 
+getPointerToArray:
+    mov r9, lr
+    ldr r0, =reserved_array
+    mov pc, r9
 
 return:
-    pop     {pc}
+    pop {pc}
 
 .section .rodata
 .align 4
@@ -333,6 +351,8 @@ alarm_string: .string "Alarm entered\n"
 event_string: .string "Event has caused interrupt\n"
 rising_edge_interrupt_string: .string "Rising edge interrupt has occured\n"
 falling_edge_interrupt_string: .string "Falling edge interrupt has occured\n"
+load_high_interrupt_string: .string "interrupt load high occured\n"
+load_low_interrupt_string: .string "interrupt load low occured\n"
 
 .data
 reserved_array: .space 24 // makes an array of 6 elements
