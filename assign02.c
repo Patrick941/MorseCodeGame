@@ -117,4 +117,89 @@ void playGame(){
     }
 }
 
+// Compares morse input with morse array
+int get_Morse_Index(char *morse_Input)
+{
+    int i = 0;
+	while (i !=36){
+		if (!strcmp(morse_Input, morseStruct[i].morseCode))
+		{
+			return i;
+		}
+        i++;
+	}
+
+	return -1;
+}
+
+// Compares char input with char array
+int get_Char_Index(char char_Input)
+{
+    int i = 0;
+	while (i !=36){
+		if (char_Input == morseStruct[i].letter)
+		{
+			return i;
+		}
+        i++;
+	}
+
+	return -1;
+}
+
+// Takes input array pointer and compares with char from challenge
+int morse_Compare(char *input)
+{
+	char morse_Input[6];
+
+	// Set values from input into char array
+	for (int i = 0; i < 6; i++)
+	{
+		morse_Input[i] = *(input + (i *sizeof(int)));
+	}
+
+	// Make a new string
+	char *string = morse_Input;
+
+	// Find morse from user input
+	int input_Index = get_Morse_Index(string);
+
+	// Compares indexes
+	if (input_Index == -1)
+	{
+		printf("||---------------------------------------------------||\n");
+		printf("||                     NOT FOUND                     ||\n");
+		printf("||---------------------------------------------------||\n");
+		return 0;
+	}
+    if (challenge_Index == input_Index)	// If letter needed = letter input
+	{
+		printf("||---------------------------------------------------||\n");
+		printf("||                 YOUR INPUT[ %s ]                  ||\n", morseStruct[input_Index].letter);
+		printf("||---------------------------------------------------||\n");
+		return 1;
+	}
+	else
+	{
+		printf("||---------------------------------------------------||\n");
+		printf("||                 YOUR INPUT[ %s ]                  ||\n", morseStruct[input_Index].letter);
+		printf("||---------------------------------------------------||\n");
+		return 0;
+	}
+    return 0;
+}
+
+void hardcodedMorseCompareTest(){
+    for(int i = 0; i < 8; i ++){
+        challenge_Index = rand() % 36;
+        if(morse_Compare(challenge_Index - 1) == 1){
+            printf("An Error has occured with the comparison\n");
+        } else if(morse_Compare(challenge_Index + 1) == 1){
+            printf("An Error has occured with the comparison\n");
+        } else if(morse_Compare(challenge_Index) == 0){
+            printf("An Error has occured with the comparison\n");
+        }
+    }
+}
+
 
