@@ -401,7 +401,7 @@ void playGame() {
                         printf("||---------------------------------------------------||\n");
 
                         while (guess_Current < 4) {
-                            challenge_Index = wordLetterIndexes[guess_Current];
+                            challenge_Index = wordLetterIndex[guess_Current];
 
                             printf("||---------------------------------------------------||\n");
                             printf("    Current Letter:< %c > = (%s)\n", morseStruct[challenge_Index].letter, morseStruct[challenge_Index].morseCode);
@@ -488,7 +488,7 @@ void playGame() {
                             int i = 0;
                             while (i != 36) {
                                 if (buff[size] == morseStruct[i].letter) {
-                                    wordLetterIndexes[size] = i;
+                                    wordLetterIndex[size] = i;
                                 }
                                 i++;
                             }
@@ -569,7 +569,7 @@ void playGame() {
                             int i = 0;
                             while (i != 36) {
                                 if (buff[size] == morseStruct[i].letter) {
-                                    wordLetterIndexes[size] = i;
+                                    wordLetterIndex[size] = i;
                                 }
                                 i++;
                             }
