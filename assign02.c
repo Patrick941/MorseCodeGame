@@ -85,6 +85,9 @@ int main() {
     uint offset = pio_add_program(pio, & ws2812_program);
     ws2812_program_init(pio, 0, offset, WS2812_PIN, 800000, IS_RGBW);
 
+    // Blue to indicate game is not in progress
+    put_pixel(urgb_u32(0x00, 0x00, 0x7F));
+
     // Run Main arm function in assign02.S
     main_asm();
 
@@ -111,6 +114,8 @@ void playGame() {
     printf("||     |:|   |:::| |:::::::| |:| |:| |:| |:|         ||\n");
     printf("||     |:|_____|:| |:|   |:| |:|     |:| |:|___      ||\n");
     printf("||     |:::::::::| |:|   |:| |:|     |:| |:::::|     ||\n");
+    printf("||===================================================||\n");
+    printf("||                 Made By: Group 20                 ||\n");
     printf("||===================================================||\n");
     printf("||                   [HOW TO PLAY]                   ||\n");
     printf("||===================================================||\n");
