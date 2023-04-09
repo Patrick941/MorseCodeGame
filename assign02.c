@@ -1,98 +1,101 @@
 #include <stdio.h>
+
 #include <stdlib.h>
+
 #include <string.h>
+
 #include <time.h>
-#include "assign02Arrays.h"
+
 #include "pico/stdlib.h"
+
 #include "hardware/gpio.h"
+
 #include "hardware/pio.h"
 
+#include "hardware/clocks.h"
+
+#include "ws2812.pio.h"
+
+void main_asm();
 void asm_gpio_init(uint pin);
 void asm_gpio_set_dir(uint pin, bool out);
 bool asm_gpio_get(uint pin);
 void asm_gpio_put(uint pin, bool value);
 void asm_gpio_set_irq(uint pin);
-void playGame();
-void main_asm();
+static inline void put_pixel(uint32_t pixel_grb);
+static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b);
+void RGB_Change();
+void hardcodedMorseCompareTest();
+int morse_Compare(char * input);
+int verify_Input();
+void branch_to_asm();
+char * getPointerToArray();
+void Game_Over_Screen();
+void Game_Win_Screen();
+void Game_STATS();
+void Game_Flow_Control();
+void print_level_header();
 
-// Main entry point of the application
+
+#define ARRAY_SIZE_FOR_MORSE 36
+
+void setUpArrays();
+void setUpArrays();
+void printArrays();
+void playGame();
+
+typedef struct morseChar morseChar;
+struct morseChar {
+    char * morseCode;
+    char letter;
+    char * word;
+};
+
+morseChar morseStruct[40];
+
+// From Example
+#define IS_RGBW true // Will use RGBW format
+#define NUM_PIXELS 1 // There is 1 WS2812 device in the chain
+#define WS2812_PIN 28 // The GPIO pin that the WS2812 connected to
+
+// Global Variables
+int challenge_Index; // Index of char for each challenge
+int lives = 3; // Amount of lives for player
+// Stats variables
+int total_Correct = 0; // Total Correct Guesses
+// (For level 3 and 4 its the full word not each char)
+
+int total_Lives_Lost = 0; // Total Lives Lost
+int total_Lives_Gained = 0; // Total Lives Gained
+int completed_Levels = 0;
+
+int guess_Correct = 0; // To control 5 correct guesses 
+int guess_Current = 0; // Current guess for work level 3 and 4
+int level = 1; // Starting level and level select
+char Game_Over = '0'; // Bool for game over scene
+
+// Main function
 int main() {
-    setUpArrays();
-    stdio_init_all();              
+
+    // Initialise all STDIO as we will be using the GPIOs
+    stdio_init_all();
+
+    // Initialise the PIO interface with the WS2812 code
     PIO pio = pio0;
     uint offset = pio_add_program(pio, & ws2812_program);
     ws2812_program_init(pio, 0, offset, WS2812_PIN, 800000, IS_RGBW);
 
-    main_asm();                    
-    playGame();
-    return 0;                      // Application return code
-}
+    // Run Main arm function in assign02.S
+    main_asm();
 
-// Initialise a GPIO pin – see SDK for detail on gpio_init()
-void asm_gpio_init(uint pin) {
-    gpio_init(pin);
+    return 0;
 }
-
-// Set direction of a GPIO pin – see SDK for detail on gpio_set_dir()
-void asm_gpio_set_dir(uint pin, bool out) {
-    gpio_set_dir(pin, out);
-}
-
-// Get the value of a GPIO pin – see SDK for detail on gpio_get()
-bool asm_gpio_get(uint pin) {
-    return gpio_get(pin);
-}
-
-// Set the value of a GPIO pin – see SDK for detail on gpio_put()
-void asm_gpio_put(uint pin, bool value) {
-    gpio_put(pin, value);
-}
-
-// Enable falling-edge interrupt – see SDK for detail on gpio_set_irq_enabled()
-void asm_gpio_set_irq(uint pin) {
-    gpio_set_irq_enabled(pin, GPIO_IRQ_EDGE_FALL, true);
-}
-
-// FROM Example
-static inline void put_pixel(uint32_t pixel_grb) {
-    pio_sm_put_blocking(pio0, 0, pixel_grb << 8u);
-}
-
-// FROM Example
-static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) {
-    return ((uint32_t)(r) << 8) |
-        ((uint32_t)(g) << 16) |
-        (uint32_t)(b);
-}
-
-// Function to change LED based on current lives
-void RGB_Change() {
-    // From example
-    if (lives == 0) {
-        // Red when no lives
-        printf("\033[1;31m");
-        put_pixel(urgb_u32(0x7F, 0x00, 0x00));
-    } else if (lives == 1) {
-        // Orange for 1 life
-        printf("\033[0;33m");
-        put_pixel(urgb_u32(0x2F, 0xC, 0x00));
-    } else if (lives == 2) {
-        // Blue for 2 lives
-        printf("\033[0;34m");
-        put_pixel(urgb_u32(0x00, 0x00, 0x7F));
-    } else if (lives == 3) {
-        // Green for 3 lives
-        printf("\033[1;32m");
-        put_pixel(urgb_u32(0x00, 0x7F, 0x00));
-    }
-}
-
 
 void playGame() {
     printf("\033[1;34m");
     put_pixel(urgb_u32(0x00, 0x00, 0x00));
     printf("||===================================================||\n");
-    printf("||  _       _   ____3___   _______   _______   _____  ||\n");
+    printf("||  _       _   ____2___   _______   _______   _____  ||\n");
     printf("|| |:|     |:| |:::::::| |:::::::| |:::::::| |:::::| ||\n");
     printf("|| |::|   |::| |:|   |:| |:|   |:| |:|       |:|     ||\n");
     printf("|| |:|:| |:|:| |:|   |:| |:|_|:| |:|___  |:|___  ||\n");
@@ -643,89 +646,409 @@ void playGame() {
 
 }
 
-// Compares morse input with morse array
-int get_Morse_Index(char *morse_Input)
-{
-    int i = 0;
-	while (i !=36){
-		if (!strcmp(morse_Input, morseStruct[i].morseCode))
-		{
-			return i;
-		}
-        i++;
-	}
-
-	return -1;
+// Initialise a GPIO pin - see SDK for detail on gpio_init()
+void asm_gpio_init(uint pin) {
+    gpio_init(pin);
 }
 
-// Compares char input with char array
-int get_Char_Index(char char_Input)
-{
-    int i = 0;
-	while (i !=36){
-		if (char_Input == morseStruct[i].letter)
-		{
-			return i;
-		}
-        i++;
-	}
-
-	return -1;
+// Set direction of a GPIO pin - see SDK for detail on gpio_set_dir()
+void asm_gpio_set_dir(uint pin, bool out) {
+    gpio_set_dir(pin, out);
 }
 
-// Takes input array pointer and compares with char from challenge
-int morse_Compare(char *input)
-{
-	char morse_Input[6];
-
-	// Set values from input into char array
-	for (int i = 0; i < 6; i++)
-	{
-		morse_Input[i] = *(input + (i *sizeof(int)));
-	}
-
-	// Make a new string
-	char *string = morse_Input;
-
-	// Find morse from user input
-	int input_Index = get_Morse_Index(string);
-
-	// Compares indexes
-	if (input_Index == -1)
-	{
-		printf("||---------------------------------------------------||\n");
-		printf("||                     NOT FOUND                     ||\n");
-		printf("||---------------------------------------------------||\n");
-		return 0;
-	}
-    if (challenge_Index == input_Index)	// If letter needed = letter input
-	{
-		printf("||---------------------------------------------------||\n");
-		printf("||                 YOUR INPUT[ %s ]                  ||\n", morseStruct[input_Index].letter);
-		printf("||---------------------------------------------------||\n");
-		return 1;
-	}
-	else
-	{
-		printf("||---------------------------------------------------||\n");
-		printf("||                 YOUR INPUT[ %s ]                  ||\n", morseStruct[input_Index].letter);
-		printf("||---------------------------------------------------||\n");
-		return 0;
-	}
-    return 0;
+// Get the value of a GPIO pin - see SDK for detail on gpio_get()
+bool asm_gpio_get(uint pin) {
+    return gpio_get(pin);
 }
 
-void hardcodedMorseCompareTest(){
-    for(int i = 0; i < 8; i ++){
+void setUpArrays() {
+    for (int i = 0; i < ARRAY_SIZE_FOR_MORSE; i++) {
+        if (i < 10) {
+            morseStruct[i].letter = (char)(i + '0'); // assign the character corresponding to the integer value
+            switch (i) {
+            case 0:
+                morseStruct[i].morseCode = "-----";
+                break;
+            case 1:
+                morseStruct[i].morseCode = ".----";
+                break;
+            case 2:
+                morseStruct[i].morseCode = "..---";
+                break;
+            case 3:
+                morseStruct[i].morseCode = "...--";
+                break;
+            case 4:
+                morseStruct[i].morseCode = "....-";
+                break;
+            case 5:
+                morseStruct[i].morseCode = ".....";
+                break;
+            case 6:
+                morseStruct[i].morseCode = "-....";
+                break;
+            case 7:
+                morseStruct[i].morseCode = "--...";
+                break;
+            case 8:
+                morseStruct[i].morseCode = "---..";
+                break;
+            case 9:
+                morseStruct[i].morseCode = "----.";
+                break;
+            default:
+                break;
+            }
+        } else {
+            morseStruct[i].letter = (char)(i + 55); // assign the character corresponding to the integer value
+            switch (i) {
+            case 10:
+                morseStruct[i].morseCode = ".-";
+                break;
+            case 11:
+                morseStruct[i].morseCode = "-...";
+                break;
+            case 12:
+                morseStruct[i].morseCode = "-.-.";
+                break;
+            case 13:
+                morseStruct[i].morseCode = "-..";
+                break;
+            case 14:
+                morseStruct[i].morseCode = ".";
+                break;
+            case 15:
+                morseStruct[i].morseCode = "..-.";
+                break;
+            case 16:
+                morseStruct[i].morseCode = "--.";
+                break;
+            case 17:
+                morseStruct[i].morseCode = "....";
+                break;
+            case 18:
+                morseStruct[i].morseCode = "..";
+                break;
+            case 19:
+                morseStruct[i].morseCode = ".---";
+                break;
+            case 20:
+                morseStruct[i].morseCode = "-.-";
+                break;
+            case 21:
+                morseStruct[i].morseCode = ".-..";
+                break;
+            case 22:
+                morseStruct[i].morseCode = "--";
+                break;
+            case 23:
+                morseStruct[i].morseCode = "-.";
+                break;
+            case 24:
+                morseStruct[i].morseCode = "---";
+                break;
+            case 25:
+                morseStruct[i].morseCode = ".--.";
+                break;
+            case 26:
+                morseStruct[i].morseCode = "--.-";
+                break;
+            case 27:
+                morseStruct[i].morseCode = ".-.";
+                break;
+            case 28:
+                morseStruct[i].morseCode = "...";
+                break;
+            case 29:
+                morseStruct[i].morseCode = "-";
+                break;
+            case 30:
+                morseStruct[i].morseCode = "..-";
+                break;
+            case 31:
+                morseStruct[i].morseCode = "...-";
+                break;
+            case 32:
+                morseStruct[i].morseCode = ".--";
+                break;
+            case 33:
+                morseStruct[i].morseCode = "-..-";
+                break;
+            case 34:
+                morseStruct[i].morseCode = "-.--";
+                break;
+            case 35:
+                morseStruct[i].morseCode = "--.";
+                break;
+            case 36:
+                morseStruct[i].morseCode = "NULL";
+                break;
+            case 37:
+                morseStruct[i].morseCode = "NULL";
+                break;
+            case 38:
+                morseStruct[i].morseCode = "NULL";
+                break;
+            case 39:
+                morseStruct[i].morseCode = "NULL";
+                break;
+            default:
+                break;
+            }
+        }
+        if (i < 20) {
+            switch (i) {
+            case 0:
+                morseStruct[i].word = "RADIO";
+                break;
+            case 1:
+                morseStruct[i].word = "RELAY";
+                break;
+            case 2:
+                morseStruct[i].word = "WAVES";
+                break;
+            case 3:
+                morseStruct[i].word = "ALARM";
+                break;
+            case 4:
+                morseStruct[i].word = "SOUND";
+                break;
+            case 5:
+                morseStruct[i].word = "MORSE";
+                break;
+            case 6:
+                morseStruct[i].word = "HERTZ";
+                break;
+            case 7:
+                morseStruct[i].word = "BLEEP";
+                break;
+            case 8:
+                morseStruct[i].word = "BURST";
+                break;
+            case 9:
+                morseStruct[i].word = "NOISE";
+                break;
+            case 10:
+                morseStruct[i].word = "SIREN";
+                break;
+            case 11:
+                morseStruct[i].word = "TONES";
+                break;
+            case 12:
+                morseStruct[i].word = "SPARK";
+                break;
+            case 13:
+                morseStruct[i].word = "CABLE";
+                break;
+            case 14:
+                morseStruct[i].word = "CODES";
+                break;
+            case 15:
+                morseStruct[i].word = "DOTS";
+                break;
+            case 16:
+                morseStruct[i].word = "DASH";
+                break;
+            case 17:
+                morseStruct[i].word = "BEEP";
+                break;
+            case 18:
+                morseStruct[i].word = "BUZZ";
+                break;
+            case 19:
+                morseStruct[i].word = "TAPS";
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+
+void printArrays() {
+    for (int i = 0; i < ARRAY_SIZE_FOR_MORSE; i++) {
+        if (morseStruct[i].morseCode != NULL) {
+            printf("Character: %c, Morse String: %s\n", morseStruct[i].letter, morseStruct[i].morseCode);
+        }
+    }
+    for (int i = 0; i < 20; i++) {
+        if (morseStruct[i].word != NULL) {
+            printf("Word is: %s\n", morseStruct[i].word);
+        }
+    }
+}
+
+// Set the value of a GPIO pin - see SDK for detail on gpio_put()
+void asm_gpio_put(uint pin, bool value) {
+    gpio_put(pin, value);
+}
+
+// Enable falling-edge interrupt - see SDK for detail on gpio_set_irq_enabled()
+void asm_gpio_set_irq(uint pin) {
+    gpio_set_irq_enabled(pin, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true);
+}
+
+// FROM Example
+static inline void put_pixel(uint32_t pixel_grb) {
+    pio_sm_put_blocking(pio0, 0, pixel_grb << 8u);
+}
+
+// FROM Example
+static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) {
+    return ((uint32_t)(r) << 8) |
+        ((uint32_t)(g) << 16) |
+        (uint32_t)(b);
+}
+
+// Function to change LED based on current lives
+void RGB_Change() {
+    // From example
+    if (lives == 0) {
+        // Red when no lives
+        printf("\033[1;31m");
+        put_pixel(urgb_u32(0x7F, 0x00, 0x00));
+    } else if (lives == 1) {
+        // Orange for 1 life
+        printf("\033[0;33m");
+        put_pixel(urgb_u32(0x2F, 0xC, 0x00));
+    } else if (lives == 2) {
+        // Blue for 2 lives
+        printf("\033[0;34m");
+        put_pixel(urgb_u32(0x00, 0x00, 0x7F));
+    } else if (lives == 3) {
+        // Green for 3 lives
+        printf("\033[1;32m");
+        put_pixel(urgb_u32(0x00, 0x7F, 0x00));
+    }
+}
+
+void hardcodedMorseCompareTest() {
+    for (int i = 0; i < 8; i++) {
         challenge_Index = rand() % 36;
-        if(morse_Compare(challenge_Index - 1) == 1){
+        if (morse_Compare(morseStruct[challenge_Index - 1].morseCode) == 1) {
             printf("An Error has occured with the comparison\n");
-        } else if(morse_Compare(challenge_Index + 1) == 1){
+        } else if (morse_Compare(morseStruct[challenge_Index + 1].morseCode) == 1) {
             printf("An Error has occured with the comparison\n");
-        } else if(morse_Compare(challenge_Index) == 0){
+        } else if (morse_Compare(morseStruct[challenge_Index].morseCode) == 0) {
             printf("An Error has occured with the comparison\n");
         }
     }
 }
 
+// Takes input array pointer and compares with char from challenge
+int morse_Compare(char * input) {
+    char morse_Input[6];
 
+    // Set values from input into char array
+    for (int i = 0; i < 6; i++) {
+        morse_Input[i] = * (input + (i * sizeof(int)));
+    }
+
+    // Find morse from user input
+    int input_Index;
+
+    int i = 0;
+    while (i != 36) {
+        if (!strcmp(morse_Input, morseStruct[i].morseCode)) {
+            input_Index = i;
+            // Compares indexes
+            if (input_Index == -1) {
+                printf("||---------------------------------------------------||\n");
+                printf("||                     NOT FOUND                     ||\n");
+                printf("||---------------------------------------------------||\n");
+                return 0;
+            }
+            if (challenge_Index == input_Index) // If letter needed = letter input
+            {
+                printf("||---------------------------------------------------||\n");
+                printf("||                 YOUR INPUT[ %c ]                  ||\n", morseStruct[input_Index].letter);
+                printf("||---------------------------------------------------||\n");
+                return 1;
+            } else {
+                printf("||---------------------------------------------------||\n");
+                printf("||                 YOUR INPUT[ %c ]                  ||\n", morseStruct[input_Index].letter);
+                printf("||---------------------------------------------------||\n");
+                return 0;
+            }
+            return 0;
+        }
+        i++;
+    }
+    return 0;
+}
+
+// Verifies user input
+int verify_Input() {
+    if (morse_Compare(getPointerToArray()) == 1) {
+        printf("||==================[ + CORRECT + ]==================||\n");
+        return 1;
+    } else {
+        printf("||###################[ - WRONG - ]###################||\n");
+        return 0;
+    }
+}
+
+void Game_Over_Screen() {
+    printf("#######################################################\n");
+    printf("#           _________     ___     _       _   _____   #\n");
+    printf("#          |:::::::::|   |:::|   |:|     |:| |:::::|  #\n");
+    printf("#         |:|     |:|  |:| |:|  |::|   |::| |:|       #\n");
+    printf("#        |:|         |:|   |:| |:|:| |:|:| |:|__      #\n");
+    printf("#       |:|   ___   |:|___|:| |:||:||:|:| |:::::|     #\n");
+    printf("#      |:|   |:::| |:::::::| |:| |:| |:| |:|          #\n");
+    printf("#     |:|____|:|  |:|   |:| |:|     |:| |:| _         #\n");
+    printf("#    |:::::::::| |:|   |:| |:|     |:| |:::::|        #\n");
+    printf("#            _______   _      _   _____   _______     #\n");
+    printf("#           |:::::::| |:|    |:| |:::::| |:::::::|    #\n");
+    printf("#          |:|   |:| |:|    |:| |:|     |:|   |:|     #\n");
+    printf("#         |:|   |:|  |:|  |:|  |:|__   |:|___|:|      #\n");
+    printf("#        |:|   |:|  |:|  |:|  |:::::| |::::::|        #\n");
+    printf("#       |:|   |:|   |:||:|   |:|     |:||:|           #\n");
+    printf("#      |:|_|:|   |:|:|    |:|   |:| |:|           #\n");
+    printf("#     |:::::::|    |:|     |:::::| |:|  |:|           #\n");
+    printf("#######################################################\n");
+}
+
+// Function to display Victory screen
+void Game_Win_Screen() {
+    printf("||===================================================||\n");
+    printf("||           _       _   _______   _     _           ||\n");
+    printf("||          |:|     |:| |:::::::| |:|   |:|          ||\n");
+    printf("||           |:|   |:|  |:|   |:| |:|   |:|          ||\n");
+    printf("||            |:| |:|   |:|   |:| |:|   |:|          ||\n");
+    printf("||             |:|:|    |:|   |:| |:|   |:|          ||\n");
+    printf("||              |:|     |:|   |:| |:|   |:|          ||\n");
+    printf("||              |:|     |:|___|:| |:|___|:|          ||\n");
+    printf("||              |:|     |:::::::| |:::::::|          ||\n");
+    printf("||         _             _______   __      _         ||\n");
+    printf("||        |:|       |:| |:::::::| |::|    |:|        ||\n");
+    printf("||        |:|       |:|    |:|    |:|:|   |:|        ||\n");
+    printf("||        |:|  |:|  |:|    |:|    |:||:|  |:|        ||\n");
+    printf("||        |:| |:|:| |:|    |:|    |:| |:| |:|        ||\n");
+    printf("||        |:||:| |:||:|    |:|    |:|  |:||:|        ||\n");
+    printf("||        |:|:|   |:|:|   |:|   |:|   |:|:|        ||\n");
+    printf("||        |::|     |::| |:::::::| |:|    |::|        ||\n");
+    printf("||===================================================||\n");
+}
+
+// Function for endgame Game_STATS
+void Game_STATS() {
+    // Calculate percentage of correct answers
+    int percentage_Correct = ((total_Correct * 100) / (total_Correct + total_Lives_Lost));
+    // Print Stats
+    printf("||===================================================||\n");
+    printf("||                       STATS                       ||\n");
+    printf("||===================================================||\n");
+    printf("    Levels Completed: %d \n", completed_Levels);
+    printf("    Lives Lost: %d \n", total_Lives_Lost);
+    printf("    Lives Gained: %d \n", total_Lives_Gained);
+    printf("    Correct Guesses: %d \n", total_Correct);
+    printf("    Percent Correct: %d %% \n", percentage_Correct);
+    printf("||===================================================||\n");
+}
+
+void print_level_header(int level) {
+    printf("||===================================================||\n");
+    printf("||                 [LEVEL: %i of 4]                  ||\n", level);
+    printf("||===================================================||\n");
+}
