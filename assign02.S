@@ -13,12 +13,12 @@
 .global getPointerToArray
 .align  4
 
- 
+// Declarations // 
 
-.equ    DFLT_STATE_STRT, 1            @ Specify the value to start flashing
-.equ    DFLT_STATE_STOP, 0            @ Specify the value to stop flashing
-.equ    DFLT_ALARM_TIME, 1000000      @ Specify the default alarm timeout
-.equ    SLEEP_TIME, 100               @ Specify the amount of ms that we want to sleep for in the main_loop
+.equ    DFLT_STATE_STRT, 1            // Specify the value to start flashing
+.equ    DFLT_STATE_STOP, 0            // Specify the value to stop flashing
+.equ    DFLT_ALARM_TIME, 1000000      // Specify the default alarm timeout
+.equ    SLEEP_TIME, 100               // Specify the amount of ms that we want to sleep for in the main_loop
 
  
 
@@ -29,82 +29,92 @@
 
 
 
-.equ    GPIO_BTN_EN,  21              @ Specify pin for the "enter" button
-.equ    GPIO_DIR_IN,   0              @ Specify input direction for a GPIO pin
-.equ    GPIO_DIR_OUT,  1              @ Specify output direction for a GPIO pin
-.equ    GPIO_LED_PIN, 25              @ Specify pin for the built-in LED
+.equ    GPIO_BTN_EN,  21              // Specify pin for the "enter" button
+.equ    GPIO_DIR_IN,   0              // Specify input direction for a GPIO pin
+.equ    GPIO_DIR_OUT,  1              // Specify output direction for a GPIO pin
+.equ    GPIO_LED_PIN, 25              // Specify pin for the built-in LED
 
-.equ    LED_VAL_ON,    1              @ Specify value that turns the LED "on"
-.equ    LED_VAL_OFF,   0              @ Specify value that turns the LED "off"
-.equ    GPIO_ISR_OFFSET, 0x74         @ GPIO is int #13 (vector table entry 29)
-.equ    ALRM_ISR_OFFSET, 0x40         @ ALARM0 is int #0 (vector table entry 16)
+.equ    LED_VAL_ON,    1              // Specify value that turns the LED "on"
+.equ    LED_VAL_OFF,   0              // Specify value that turns the LED "off"
+.equ    GPIO_ISR_OFFSET, 0x74         // GPIO is int #13 (vector table entry 29)
+.equ    ALRM_ISR_OFFSET, 0x40         // ALARM0 is int #0 (vector table entry 16)
+
+//main function (called by the C code)//
+// re-used code from previous labs //
 
 main_asm:
 
     push  {lr}
-    movs    r0, #GPIO_LED_PIN                       @ Load the LED pin into r0 to use as first parameter
-    bl      asm_gpio_init                           @ Call asm_gpio_init to initialise this pin
-    movs    r0, #GPIO_LED_PIN                       @ Load the LED pin into r0 to use as first parameter
-    movs    r1, #GPIO_DIR_OUT                       @ Load the output value into r1 to use as second parameter
-    bl      asm_gpio_set_dir                        @ Set the LED pin to be an output
+    movs    r0, #GPIO_LED_PIN                       // Load the LED pin into r0 to use as first parameter
+    bl      asm_gpio_init                           // Call asm_gpio_init to initialise this pin
+    movs    r0, #GPIO_LED_PIN                       // Load the LED pin into r0 to use as first parameter
+    movs    r1, #GPIO_DIR_OUT                       // Load the output value into r1 to use as second parameter
+    bl      asm_gpio_set_dir                        // Set the LED pin to be an output
 
-    movs    r0, #GPIO_BTN_EN                        @ Load the Enter button pin into r0 to use as first parameter      
-    bl      asm_gpio_init                           @ Call asm_gpio_init to intialise this pin
-    movs    r0, #GPIO_BTN_EN                        @ Load the Enter button pin into r0 to use as first parameter
-    movs    r1, GPIO_DIR_IN                         @ Load the input value into r1 to use as second parameter
-    bl      asm_gpio_set_dir                        @ Set the Enter button pin to be an input
-    bl      asm_gpio_set_irq                        @ Call function to enable falling_edge_interrupt edge interrupt for GPIO 20
+    movs    r0, #GPIO_BTN_EN                        // Load the Enter button pin into r0 to use as first parameter      
+    bl      asm_gpio_init                           // Call asm_gpio_init to intialise this pin
+    movs    r0, #GPIO_BTN_EN                        // Load the Enter button pin into r0 to use as first parameter
+    movs    r1, GPIO_DIR_IN                         // Load the input value into r1 to use as second parameter
+    bl      asm_gpio_set_dir                        // Set the Enter button pin to be an input
+    bl      asm_gpio_set_irq                        // Call function to enable falling_edge_interrupt edge interrupt for GPIO 20
 
 
-    ldr     r5, =PPB_BASE                           @ Load the base for all the input and output pins
-    ldr     r2, =M0PLUS_VTOR_OFFSET                 @ Load the offset to get address for the vector table
-    add     r5, r5, r2                              @ Save the result in r5 for future use
-    ldr     r2, =PPB_BASE                           @ Load the base for all the input and output pins
-    ldr     r6, =M0PLUS_NVIC_ISER_OFFSET            @ Load the offset to get address for the alarm / gpio
-    add     r6, r6, r2                              @ Combine the two addresses together and save in r6 for future use
-    ldr     r2, =TIMER_BASE                         @ Load the base for all the timer pins
-    ldr     r7, =TIMER_ALARM0_OFFSET                @ Load the offset to get address for the alarm
-    add     r7, r7, r2                              @ Combine the two addresses together and save in r7 for future use
-    ldr     r2, =TIMER_BASE                         @ Load the base for all the timer pins
+    ldr     r5, =PPB_BASE                           // Load the base for all the input and output pins
+    ldr     r2, =M0PLUS_VTOR_OFFSET                 // Load the offset to get address for the vector table
+    add     r5, r5, r2                              // Save the result in r5 for future use
+    ldr     r2, =PPB_BASE                           // Load the base for all the input and output pins
+    ldr     r6, =M0PLUS_NVIC_ISER_OFFSET            // Load the offset to get address for the alarm / gpio
+    add     r6, r6, r2                              // Combine the two addresses together and save in r6 for future use
+    ldr     r2, =TIMER_BASE                         // Load the base for all the timer pins
+    ldr     r7, =TIMER_ALARM0_OFFSET                // Load the offset to get address for the alarm
+    add     r7, r7, r2                              // Combine the two addresses together and save in r7 for future use
+    ldr     r2, =TIMER_BASE                         // Load the base for all the timer pins
    
     bl      setUpArrays
 
 
     b       alarm_interrupt_init
 
+//Function call for initilisation of the gpio //
+
 alarm_init_return:
 
-    b    gpio_interrupt_init                          @Initilise the GPIO Interrupt interrupt
+    b    gpio_interrupt_init         
+                 
+//Initilisation of the gpio//
+
 gpio_init_return:
-    ldr     r1, = TIMER_BASE
-    ldr     r2, = TIMER_INTE_OFFSET  @ Enable the alarm by writing 1 to the register 
-    adds    r2, r1
-    movs    r1, #0
-    str     r1, [r2]
-    ldr     r4, =0                                      @Break main_loop flag
-    bl      playGame
+    ldr     r1, = TIMER_BASE                         // Load the base timer value into r1 (TIMER_BASE)
+    ldr     r2, = TIMER_INTE_OFFSET                  // Load the base timer offset value into r2 (TIMER_INTE_OFFSE)  
+    adds    r2, r1                                   // Adding r1 and r2 to get the current timer count in r2
+    movs    r1, #0                                   // Reseting r1 value back to 0
+    str     r1, [r2]                                 // Storing the current timer vaue in r1
+    ldr     r4, =0                                   // Setting the flag in r4 to break the loop
+    bl      playGame                                 // Branching to playGame function
     pop   {pc}
 
-
+// Main loop of the program //
 
 main_loop:
                       
-    wfi                       // Wait here until any interrupt fires
-    cmp r4, #0
-    bne return_to_c
+    wfi                                              // Keeps waiting until an interrupt disrupts it
+    cmp r4, #0                                       // Checks for a flag update
+    bne return_to_c                                  // If the flag is not 0 it branches to return_to_c function
+    b     main_loop                                  // Keeps looping to check for next interrupt
 
-    b     main_loop                // Always branch back to main_loop
-
+// Function call for reseting the flag and returning to the loop//
 
 branch_to_asm:
     push {lr}                      
-    ldr r4, =0    
-    b       main_loop
+    ldr r4, =0                                      // Resets the flag back to 0
+    b       main_loop                               // Branches back to the main loop
+
+// Simple return function//
 
 return_to_c:
-    pop {pc}
+    pop {pc}                                        // Returns back to last push
 
- 
+// Function used to update the alarm // 
 
 updateAlarm:
     /// Testing         ldr     r0, =error_string
@@ -113,22 +123,22 @@ updateAlarm:
 
  
 
-    ldr     r2, =TIMER_BASE                            @Get the current timer count from (TIMER_BASE + TIMER_TIMELR_OFFSET) register
-    ldr     r1, =TIMER_TIMELR_OFFSET
-    add     r2, r1
-    ldr     r1, [r2]                                    @
-    ldr     r0, =DFLT_ALARM_TIME
-    add     r1, r0                                      @ Add the time delay you want to wait for to the current timer count
-    ldr     r2, = TIMER_BASE                             @ Push the updated value to (TIMER_BASE + TIMER_ALARM0_OFFSET)
-    ldr     r3, = TIMER_ALARM0_OFFSET
-    add     r2, r2, r3
-    str     r1, [r2]                                    @
-    ldr     r2, =TIMER_BASE                             @ Enable the alarm by writing 1 to the register
-    ldr     r1, =TIMER_INTE_OFFSET
-    add     r2, r2, r1
-    movs    r1, #1
-    str     r1, [r2]
-    bx      lr                                          @Exit subroutine
+    ldr     r2, =TIMER_BASE                            // Get the current timer count from (TIMER_BASE + TIMER_TIMELR_OFFSET) register
+    ldr     r1, =TIMER_TIMELR_OFFSET                   //
+    add     r2, r1                                     //
+    ldr     r1, [r2]                                   //
+    ldr     r0, =DFLT_ALARM_TIME                       //
+    add     r1, r0                                     // Add the time delay you want to wait for to the current timer count
+    ldr     r2, = TIMER_BASE                           // Push the updated value to (TIMER_BASE + TIMER_ALARM0_OFFSET)
+    ldr     r3, = TIMER_ALARM0_OFFSET                  //
+    add     r2, r2, r3                                 // 
+    str     r1, [r2]                                   //
+    ldr     r2, =TIMER_BASE                            // Enable the alarm by writing 1 to the register
+    ldr     r1, =TIMER_INTE_OFFSET                     //
+    add     r2, r2, r1                                 //
+    movs    r1, #1                                     // 
+    str     r1, [r2]                                   //
+    bx      lr                                         // Exit subroutine
 
  
 
