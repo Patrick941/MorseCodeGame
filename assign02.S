@@ -113,22 +113,22 @@ updateAlarm:
 
  
 
-    ldr     r2, =TIMER_BASE                            
+    ldr     r2, =TIMER_BASE                            @Get the current timer count from (TIMER_BASE + TIMER_TIMELR_OFFSET) register
     ldr     r1, =TIMER_TIMELR_OFFSET
     add     r2, r1
-    ldr     r1, [r2]                                    
+    ldr     r1, [r2]                                    @
     ldr     r0, =DFLT_ALARM_TIME
-    add     r1, r0                                      
-    ldr     r2, = TIMER_BASE                             
+    add     r1, r0                                      @ Add the time delay you want to wait for to the current timer count
+    ldr     r2, = TIMER_BASE                             @ Push the updated value to (TIMER_BASE + TIMER_ALARM0_OFFSET)
     ldr     r3, = TIMER_ALARM0_OFFSET
     add     r2, r2, r3
-    str     r1, [r2]                                    
-    ldr     r2, =TIMER_BASE                             
+    str     r1, [r2]                                    @
+    ldr     r2, =TIMER_BASE                             @ Enable the alarm by writing 1 to the register
     ldr     r1, =TIMER_INTE_OFFSET
     add     r2, r2, r1
     movs    r1, #1
     str     r1, [r2]
-    bx      lr                                       
+    bx      lr                                          @Exit subroutine
 
  
 
@@ -245,102 +245,130 @@ gpio_isr:
     ldr     r0, =GPIO21_EDGE_HIGH                                  
     cmp     r0, r1                                                  
     beq     falling_edge_interrupt
-write_a_dot:
-    ldr r0,=write_a_dot_string
-    bl printf
-    bl loader
-    ldr r0, =0x2E
-    str r0, [r1]
-    bl increment
 
-write_a_dash:
-    ldr r0,=write_a_dash_string
-    bl printf
-    bl loader
-    ldr r0, =0x2D
-    str r0, [r1]
-    bl increment
+// Doesn't work quite right but is close
+// Doesn't work quite right but is closeload_interrupt_low:
+// Doesn't work quite right but is close    /// Testing         //movs    r0, falling_edge_interrupt_string
+// Doesn't work quite right but is close    /// Testing         ldr     r0, =falling_edge_interrupt_string
+// Doesn't work quite right but is close    /// Testing         bl      printf
+// Doesn't work quite right but is close    ldr     r1,= IO_BANK0_BASE
+// Doesn't work quite right but is close    ldr     r2, =IO_BANK0_INTR2_OFFSET         
+// Doesn't work quite right but is close    adds    r2,r1
+// Doesn't work quite right but is close    ldr     r1,=GPIO21_EDGE_LOW                                   
+// Doesn't work quite right but is close    str     r1,[r2] 
+// Doesn't work quite right but is close    bx      lr
+// Doesn't work quite right but is close
+// Doesn't work quite right but is closeload_interrupt_high: 
+// Doesn't work quite right but is close    /// Testing         //movs    r0, rising_edge_interrupt_string
+// Doesn't work quite right but is close    /// Testing         ldr     r0, =rising_edge_interrupt_string
+// Doesn't work quite right but is close    /// Testing         bl      printf
+// Doesn't work quite right but is close    ldr     r1,= IO_BANK0_BASE
+// Doesn't work quite right but is close    ldr     r2, =IO_BANK0_INTR2_OFFSET         
+// Doesn't work quite right but is close    adds    r2,r1
+// Doesn't work quite right but is close    ldr     r1,=GPIO21_EDGE_HIGH                                   
+// Doesn't work quite right but is close    str     r1,[r2]                                               
+// Doesn't work quite right but is close    bx      lr
+// Doesn't work quite right but is close
 
-load_interrupt_low:
-    /// Testing         //movs    r0, error_string
-    /// Testing         ldr     r0, =load_low_interrupt_string   @Should provide alternating pattern
-    /// Testing         bl      printf
-    ldr r1,= IO_BANK0_BASE
-    ldr r2, =IO_BANK0_INTR2_OFFSET
-    adds r2,r1
-    ldr r1,=GPIO21_EDGE_LOW
-    str r1,[r2]
-    bx lr
+load_interrupt:
+    ldr     r0,= IO_BANK0_BASE
+    ldr     r1, =IO_BANK0_INTR2_OFFSET         @ Load interrupt status from (IO_BANK0_BASE + IO_BANK0_PROC0_INTS2_OFFSET)
+    adds    r0,r1
+    bx      lr
 
-load_interrupt_high:
-    /// Testing         //movs    r0, error_string
-    /// Testing         ldr     r0, =load_high_interrupt_string   @Should provide alternating pattern
-    /// Testing         bl      printf
-    ldr r1,= IO_BANK0_BASE
-    ldr r2, =IO_BANK0_INTR2_OFFSET
-    adds r2,r1
-    ldr r1,=GPIO21_EDGE_HIGH
-    str r1,[r2]
-    bx lr
+edgeLow:
+    ldr     r2,=GPIO21_EDGE_LOW                               
+    str     r2,[r0] 
+    bx      lr
+
+edgeHigh:   
+    ldr     r2,=GPIO21_EDGE_HIGH                                
+    str     r2,[r0]                                          
+    bx      lr
 
 rising_edge_interrupt:
-    bl load_interrupt_low
-    ldr r1,= TIMER_BASE
-    ldr r3, =TIMER_TIMELR_OFFSET
-    adds r3,r1
-    ldr r6, [r3]
+    /// Testing         //movs    r0, falling_edge_interrupt_string
+    /// Testing         ldr     r0, =falling_edge_interrupt_string
+    /// Testing         bl      printf
+    bl      load_interrupt 
+    bl      edgeLow                     
+    ldr     r1,= TIMER_BASE              
+    ldr     r3, =TIMER_TIMELR_OFFSET      
+    adds    r3,r1                         
+    ldr     r6, [r3]
     bl updateAlarm
-    pop {pc}
+    pop {pc} 
 
 falling_edge_interrupt:
-    bl load_interrupt_high
-    ldr r1,= TIMER_BASE
-    ldr r3, =TIMER_TIMELR_OFFSET
-    adds r3,r1
-    ldr r7, [r3]
-    subs r7, r6
-    ldr r1, =write_a_dash_TIME
-    cmp r7, r1
-    bhs write_a_dash
-    b write_a_dot
+    /// Testing         //movs    r0, rising_edge_interrupt_string
+    /// Testing         ldr     r0, =rising_edge_interrupt_string
+    /// Testing         bl      printf
+    bl      load_interrupt  
+    bl      edgeHigh   
+    ldr     r1,= TIMER_BASE               
+    ldr     r3, =TIMER_TIMELR_OFFSET      
+    adds    r3,r1
+    ldr     r7, [r3]
+    subs    r7, r6
+    ldr     r1, =write_a_dash_TIME                                      
+    cmp     r7, r1
+    bhs     write_a_dash
+    b       write_a_dot
+
+write_a_dot: 
+    ldr     r0,=write_a_dot_string
+    bl      printf
+    bl      loader
+    ldr     r1, =0x2E
+    str     r1, [r0]
+    bl      increment
+
+write_a_dash: 
+    ldr     r0,=write_a_dash_string
+    bl      printf
+    bl      loader
+    ldr     r1, =0x2D
+    str     r1, [r0]
+    bl      increment
 
 loader:
-    ldr r0, =reserved_array
-    ldr r1, =iter
-    ldr r2 ,[r1]
-    adds r0, r2
-    bx lr
+    ldr     r0, =reserved_array
+    ldr     r1, =iter
+    ldr     r2 ,[r1]
+    adds    r0, r2
+    bx      lr
 
 increment:
-    bl loader
-    adds r2, #4
-    str r2, [r1]
+    bl      loader
+    adds    r2, #4
+    str     r2, [r1]
+
     bl      updateAlarm
     pop     {pc} 
 
 check_buffer:
-    bl loader
-    ldr r1, =0x0
-    str r1, [r0]
-    ldr r0, =reserved_array
-    ldr r1, =iter
-    ldr r0, =0x0
-    str r0, [r1]
-    ldr r1,= TIMER_BASE
-    ldr r2, =TIMER_INTE_OFFSET
-    adds r2,r1
-    movs r1, #0
-    str r1, [r2]
-    ldr r4, =1
-    pop {pc}
+    bl      loader
+    ldr     r1, =0x0
+    str     r1, [r0]
+    ldr     r0, =reserved_array
+    ldr     r1, =iter
+    ldr     r0, =0x0
+    str     r0, [r1]
+    ldr     r1,= TIMER_BASE
+    ldr     r2, =TIMER_INTE_OFFSET
+    adds    r2,r1
+    movs    r1, #0
+    str     r1, [r2]
+    ldr     r4, =1
+    pop     {pc}
 
 getPointerToArray:
-    mov r9, lr
-    ldr r0, =reserved_array
-    mov pc, r9
+    mov     r9, lr
+    ldr     r0, =reserved_array
+    mov     pc, r9
 
 return:
-    pop {pc}
+    pop     {pc}
 
 .section .rodata
 .align 4
@@ -351,11 +379,9 @@ alarm_string: .string "Alarm entered\n"
 event_string: .string "Event has caused interrupt\n"
 rising_edge_interrupt_string: .string "Rising edge interrupt has occured\n"
 falling_edge_interrupt_string: .string "Falling edge interrupt has occured\n"
-load_high_interrupt_string: .string "interrupt load high occured\n"
-load_low_interrupt_string: .string "interrupt load low occured\n"
 
 .data
-reserved_array: .space 24 // makes an array of 6 elements
+reserved_array: .space 24
 lstate: .long DFLT_STATE_STRT
 ltimer: .long DFLT_ALARM_TIME
 iter: .long 0
